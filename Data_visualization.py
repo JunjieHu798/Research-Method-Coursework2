@@ -4,26 +4,26 @@ import seaborn as sns
 import plotly.graph_objects as go
 from sklearn.preprocessing import MinMaxScaler
 
-# 读取数据
+# Load dataset
 da = pd.read_csv('diet_data.csv', encoding='utf-8')
 print("Raw data:")
 print(da.head())
 
-# 仅保留与环境影响相关的指标
+# Keep only variables related to environmental impact
 elements = ["diet_group", "sex", "age_group",
             "mean_ghgs", "mean_land", "mean_watscar", "mean_bio", "mean_watuse"]
 da = da[elements]
 print("\nData after retaining relevant features:")
 print(da.head())
 
-# 缩放环境变量（使特征尺度一致，方便后续可视化）
+# Normalize environmental indicators (to unify feature scales for better visualization)
 Scaler = MinMaxScaler()
 envir_vars = [col for col in da.columns if col.startswith("mean_")]
 da[envir_vars] = Scaler.fit_transform(da[envir_vars])
 print("\nNormalized environmental indicators:")
 print(da[envir_vars].head())
 
-# diet_group 编码（便于 plotly 着色）
+# Encode diet_group (for color mapping in plotly)
 diet_tags = da['diet_group'].unique()
 print("\ndiet_group category:", diet_tags)
 
@@ -34,7 +34,7 @@ da['diet_code'] = da['diet_group'].map(diet_code)
 print("\nData after adding diet_code:")
 print(da[['diet_group', 'diet_code']].head())
 
-# label 改进：直接替换成常用简写，人工更倾向这样写
+# Improve axis labels with abbreviations (for cleaner plots)
 labels_cha = {
     "mean_ghgs": "GHGs",
     "mean_land": "Land Use",
@@ -43,7 +43,7 @@ labels_cha = {
     "mean_watuse": "Water Use"
 }
 
-# 构建平行坐标图数据
+# Build dimensions for parallel coordinates plot
 dims = []
 for col in envir_vars:
     dims.append(dict(
@@ -54,11 +54,11 @@ print("\nDimension information of parallel coordinates plot:")
 for d in dims:
     print(d)
 
-# plotly 可视化
+# plotly visualization
 figure = go.Figure(data=go.Parcoords(
     line=dict(
         color=da['diet_code'],
-        colorscale='Turbo',  # 用更有冲击力的配色
+        colorscale='Turbo',  # Vibrant color scale
         showscale=True,
         cmin=0,
         cmax=len(diet_tags) - 1
@@ -73,8 +73,8 @@ figure.update_layout(
 )
 figure.show()
 
-# scatter matrix：更偏向实际分析
-# 这里只选了部分关键特征，突出饮食和水资源的关系
+# scatter matrix: more analytical view
+# Focus on key features to highlight diet and water-related indicators
 sns.set_theme(style="whitegrid")
 color_palette = sns.color_palette("Set2", n_colors=len(diet_tags))
 
